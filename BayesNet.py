@@ -3,7 +3,6 @@ import math
 class BayesNet:
     def __init__(self, data_set, has_column_names = False):
         self.net = {}
-        self.data_set = data_set
 
         column_names = data_set[0]
 
@@ -77,7 +76,7 @@ class BayesNet:
         elif parent in self.net[child]['parents'] and child not in self.net[parent]['children']:
             print('Wrong net structure. Vertex ' + child + ' is not a child of vertex ' + parent +
                   ' but vertex ' + parent + ' is a parent of vertex ' + child)
-        elif self.check_cycle(child, parent) > 0:
+        elif self.check_cycle(child, parent, True) > 0:
             print('Reversing edge ' + parent + ' -> ' + child + ' will create a cycle')
         elif parent in self.net[child]['parents'] and child in self.net[parent]['children']:
             self.net[parent]['children'].remove(child)
@@ -93,14 +92,26 @@ class BayesNet:
         else:
             self.net[vertex]['possible_values'] = values
 
-    def check_cycle(self, vertex, new_child):
-        cycles = []
+    def check_cycle(self, v, u, reversing = False):
+        graph = {}
 
-        for parent in self.pa(vertex):
-            if new_child in self.pa(parent) or parent is new_child:
-                cycles.append(parent)
+        for node in self.nodes():
+            children = []
 
-        return len(cycles)
+            for child in self.net[node]['children']:
+                children.append(child)
+
+            graph[node] = children
+
+        if not reversing:
+            graph[v].append(u)
+        else:
+            graph[u].remove(v)
+            graph[v].append(u)
+
+        cycles = [[node] + path for node in graph for path in self.dfs(graph, node, node)]
+
+        return len(cycles) > 0
 
     def nodes(self):
         for node in self.net:
@@ -109,8 +120,17 @@ class BayesNet:
     def has_node(self, vertex):
         return vertex in self.net
 
-    def has_edge(self, vertex, children):
-        return vertex in self.net[children]['parents'] and children in self.net[vertex]['children']
+    def has_edge(self, v, u):
+        return\
+            (v in self.net[u]['parents'] and
+             u in self.net[v]['children']) or\
+            (v in self.net[u]['children'] and
+             u in self.net[v]['parents'])
+
+    def is_parent(self, vertex, child):
+        return\
+            vertex in self.net[child]['parents'] and\
+            child in self.net[vertex]['children']
 
     def q(self, vertex):
         possible_parents_values = []
@@ -180,6 +200,35 @@ class BayesNet:
         metric = self.H(data_set) + self.K/2 * math.log10(self.get_data_rows_number(self, data_set))
         return metric
 
+    def score(self, data_set, metric):
+        if metric == 'AIC':
+            return self.AIC(data_set)
+        elif metric == 'MDL':
+            return self.MDL(data_set)
+        else:
+            return 0
+
     def AIC(self, data_set):
         metric = self.H(data_set) - self.K
         return metric
+
+    def MDL(self, data_set):
+        metric = self.H(data_set) - (self.K/2)*math.log(len(data_set))
+        return metric
+
+    @staticmethod
+    def dfs(graph, start, end):
+        fringe = [(start, [])]
+
+        while fringe:
+            state, path = fringe.pop()
+
+            if path and state == end:
+                yield path
+                continue
+
+            for next_state in graph[state]:
+                if next_state in path:
+                    continue
+
+                fringe.append((next_state, path + [next_state]))
