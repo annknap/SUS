@@ -3,16 +3,22 @@ from BayesNet import *
 
 class Learning:
     @staticmethod
+    def log(message, debug = True):
+        if debug:
+            print(message)
+
+    @staticmethod
     def read_file(file_name):
         return []
 
     @staticmethod
-    def hill_climbing(data_set, metric = 'AIC'):
+    def hill_climbing(data_set, metric = 'AIC', debug = False):
         bayes_net = BayesNet(data_set)
         score = bayes_net.score(data_set, metric)
 
         while True:
             max_score = score
+            Learning.log('Score: ' + score, debug)
 
             for node_i in bayes_net.nodes():
                 for node_j in bayes_net.nodes():
@@ -24,6 +30,7 @@ class Learning:
                                 bayes_net.delete_edge(node_j, node_i)
                             else:
                                 score = new_score
+                                Learning.log('Adding edge ' + node_j + ' -> ' + node_i + '. New score: ' + score, debug)
 
             for node_i in bayes_net.nodes():
                 for node_j in bayes_net.pa(node_i):
@@ -33,6 +40,7 @@ class Learning:
                         bayes_net.add_edge(node_j, node_i)
                     else:
                         score = new_score
+                        Learning.log('Deleting edge ' + node_j + ' -> ' + node_i + '. New score: ' + score, debug)
 
             for node_i in bayes_net.nodes():
                 for node_j in bayes_net.pa(node_i):
@@ -43,8 +51,10 @@ class Learning:
                             bayes_net.reverse_edge(node_j, node_i)
                         else:
                             score = new_score
+                            Learning.log('Reversing edge ' + node_j + ' -> ' + node_i + '. New score: ' + score, debug)
 
             if score < max_score:
                 break
 
-        return
+        Learning.log('Learning bayes net ended. Score achieved: ' + score, debug)
+        return bayes_net
