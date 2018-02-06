@@ -158,14 +158,14 @@ class BayesNet:
         return self.net[vertex]['parents']
 
     #TODO: adjust to real data sets
-    def get_data_rows_number(self, data_set):
+    def get_data_set_rows_number(self, data_set):
         number = len(data_set)
         if self.has_column_names:
             number -= 1
 
         return number
 
-    def get_vertex_number(self):
+    def nodes_number(self):
         number = len(self.vertexes)
 
         return number
@@ -179,13 +179,13 @@ class BayesNet:
         return parameters_count
 
     def H(self, data_set):
-        vertex_number = self.get_vertex_number(self)
+        vertex_number = self.nodes_number(self)
 
         value = 0
         for i in range(1, vertex_number):
             for j in range(1, self.q(self, self.net[self.vertexes[i]])):
                 for k in range(1, self.r(self, self.net[self.vertexes[i]])):
-                    N = self.get_data_rows_number(self, data_set)
+                    N = self.get_data_set_rows_number(self, data_set)
                     Nij = 0
                     for row in data_set:
                         if self.pa(self, self.net[self.vertexes[i]]) == row[j]:
