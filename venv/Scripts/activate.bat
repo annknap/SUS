@@ -1,5 +1,5 @@
 @echo off
-set "VIRTUAL_ENV=F:\semIX\SUS\project\venv"
+set "VIRTUAL_ENV=F:\semIX\SUS\SUS\venv"
 
 if defined _OLD_VIRTUAL_PROMPT (
     set "PROMPT=%_OLD_VIRTUAL_PROMPT%"
