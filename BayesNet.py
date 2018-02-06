@@ -3,6 +3,7 @@ import math
 class BayesNet:
     def __init__(self, data_set, has_column_names = False):
         self.net = {}
+        self.has_column_names = has_column_names
 
         column_names = data_set[0]
 
@@ -158,8 +159,10 @@ class BayesNet:
 
     #TODO: adjust to real data sets
     def get_data_rows_number(self, data_set):
-        number = len(data_set-1)
-
+        number = len(data_set)
+        if self.has_column_names:
+            number -= 1
+            
         return number
 
     def get_vertex_number(self):
