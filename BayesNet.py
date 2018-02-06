@@ -1,4 +1,7 @@
-import math
+from math import *
+from networkx import *
+from matplotlib.pyplot import *
+
 
 class BayesNet:
     def __init__(self, data_set, has_column_names = False):
@@ -6,7 +9,6 @@ class BayesNet:
         self.has_column_names = has_column_names
 
         column_names = data_set[0]
-
 
         if has_column_names is False:
             column_names = []
@@ -157,7 +159,7 @@ class BayesNet:
     def pa(self, vertex):
         return self.net[vertex]['parents']
 
-    #TODO: adjust to real data sets
+    # TODO: adjust to real data sets
     def get_data_set_rows_number(self, data_set):
         number = len(data_set)
         if self.has_column_names:
@@ -179,28 +181,30 @@ class BayesNet:
         return parameters_count
 
     def H(self, data_set):
-        vertex_number = self.nodes_number(self)
+        vertex_number = self.nodes_number()
 
         value = 0
         for i in range(1, vertex_number):
-            for j in range(1, self.q(self, self.net[self.vertexes[i]])):
-                for k in range(1, self.r(self, self.net[self.vertexes[i]])):
-                    N = self.get_data_set_rows_number(self, data_set)
+            for j in range(1, self.q(self.net[self.vertexes[i]])):
+                for k in range(1, self.r(self.net[self.vertexes[i]])):
+                    N = self.get_data_set_rows_number(data_set)
                     Nij = 0
                     for row in data_set:
-                        if self.pa(self, self.net[self.vertexes[i]]) == row[j]:
+                        if self.pa(self.net[self.vertexes[i]]) == row[j]:
                             Nij += 1
                     Nijk = 0
                     for row in data_set:
-                        if self.pa(self, self.net[self.vertexes[i]]) == row[j] and self.r(self, self.net[self.vertexes[i]]==row[k]):
+                        if self.pa(self.net[self.vertexes[i]]) == row[j] and self.r(
+                                self.net[self.vertexes[i]] ==
+                                row[k]):
                             Nijk += 1
 
-                    value += Nijk/N * math.log(Nijk/Nij)
+                    value += Nijk/N*math.log(Nijk/Nij)
 
         return value
 
     def MDL(self, data_set):
-        metric = self.H(data_set) + self.K/2 * math.log(self.get_data_rows_number(self, data_set))
+        metric = self.H(data_set) + self.K()/2*log(self.get_data_set_rows_number(data_set))
         return metric
 
     def score(self, data_set, metric):
@@ -212,8 +216,49 @@ class BayesNet:
             return 0
 
     def AIC(self, data_set):
-        metric = self.H(data_set) - self.K
+        metric = self.H(data_set) - self.K()
         return metric
+
+    def draw_graph(self,
+                   graph_layout = 'shell',
+                   node_size = 800,
+                   node_color = 'blue',
+                   node_alpha = 0.2,
+                   node_text_size = 10,
+                   edge_color = 'blue',
+                   edge_alpha = 0.4,
+                   edge_thickness = 1,
+                   text_font = 'sans-serif'):
+
+        graph = []
+
+        for node in self.nodes():
+            for child in self.net[node]['children']:
+                graph.append((node, child))
+
+        graph.sort()
+        network_graph = Graph()
+
+        for edge in graph:
+            network_graph.add_edge(edge[0], edge[1])
+
+        if graph_layout == 'spring':
+            graph_pos = spring_layout(network_graph)
+        elif graph_layout == 'spectral':
+            graph_pos = spectral_layout(network_graph)
+        elif graph_layout == 'random':
+            graph_pos = random_layout(network_graph)
+        else:
+            graph_pos = shell_layout(network_graph)
+
+        draw_networkx_nodes(network_graph, graph_pos, node_size = node_size,
+                            alpha = node_alpha, node_color = node_color)
+        draw_networkx_edges(network_graph, graph_pos, width = edge_thickness,
+                            alpha = edge_alpha, edge_color = edge_color)
+        draw_networkx_labels(network_graph, graph_pos, font_size = node_text_size,
+                             font_family = text_font)
+
+        show()
 
     @staticmethod
     def dfs(graph, start, end):
