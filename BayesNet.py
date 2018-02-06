@@ -162,7 +162,7 @@ class BayesNet:
         number = len(data_set)
         if self.has_column_names:
             number -= 1
-            
+
         return number
 
     def get_vertex_number(self):
@@ -195,12 +195,12 @@ class BayesNet:
                         if self.pa(self, self.net[self.vertexes[i]]) == row[j] and self.r(self, self.net[self.vertexes[i]]==row[k]):
                             Nijk += 1
 
-                    value += Nijk/N * math.log10(Nijk/Nij)
+                    value += Nijk/N * math.log(Nijk/Nij)
 
         return value
 
     def MDL(self, data_set):
-        metric = self.H(data_set) + self.K/2 * math.log10(self.get_data_rows_number(self, data_set))
+        metric = self.H(data_set) + self.K/2 * math.log(self.get_data_rows_number(self, data_set))
         return metric
 
     def score(self, data_set, metric):
@@ -213,10 +213,6 @@ class BayesNet:
 
     def AIC(self, data_set):
         metric = self.H(data_set) - self.K
-        return metric
-
-    def MDL(self, data_set):
-        metric = self.H(data_set) - (self.K/2)*math.log(len(data_set))
         return metric
 
     @staticmethod
