@@ -1,9 +1,12 @@
+import math
+
 class BayesNet:
     def __init__(self, data_set, has_column_names = False):
         self.net = {}
         self.data_set = data_set
 
         column_names = data_set[0]
+
 
         if has_column_names is False:
             column_names = []
@@ -12,6 +15,8 @@ class BayesNet:
             for column in data_set[0]:
                 column_names.append(column_name)
                 column_name = chr(ord(column_name) + 1)
+
+        self.vertexes = column_names
 
         for vertex in column_names:
             self.net[vertex] = {'possible_values': [],
@@ -131,6 +136,17 @@ class BayesNet:
     def pa(self, vertex):
         return self.net[vertex]['parents']
 
+    #TODO: adjust to real data sets
+    def get_data_rows_number(self, data_set):
+        number = len(data_set-1)
+
+        return number
+
+    def get_vertex_number(self):
+        number = len(self.vertexes)
+
+        return number
+
     def K(self):
         parameters_count = 0
 
@@ -140,8 +156,29 @@ class BayesNet:
         return parameters_count
 
     def H(self, data_set):
-        """ TODO """
-        return 0
+        vertex_number = self.get_vertex_number(self)
+
+        value = 0
+        for i in range(1, vertex_number):
+            for j in range(1, self.q(self, self.net[self.vertexes[i]])):
+                for k in range(1, self.r(self, self.net[self.vertexes[i]])):
+                    N = self.get_data_rows_number(self, data_set)
+                    Nij = 0
+                    for row in data_set:
+                        if self.pa(self, self.net[self.vertexes[i]]) == row[j]:
+                            Nij += 1
+                    Nijk = 0
+                    for row in data_set:
+                        if self.pa(self, self.net[self.vertexes[i]]) == row[j] and self.r(self, self.net[self.vertexes[i]]==row[k]):
+                            Nijk += 1
+
+                    value += Nijk/N * math.log10(Nijk/Nij)
+
+        return value
+
+    def MDL(self, data_set):
+        metric = self.H(data_set) + self.K/2 * math.log10(self.get_data_rows_number(self, data_set))
+        return metric
 
     def AIC(self, data_set):
         metric = self.H(data_set) - self.K
