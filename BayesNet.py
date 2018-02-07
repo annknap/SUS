@@ -39,6 +39,7 @@ class BayesNet:
                                 'parents': [],
                                 'probabilities': []}
 
+
     def add_edge_no_directions(self, vertex_1, vertex_2, edges, weight):
         if vertex_1 not in self.net:
             print('Vertex ' + vertex_1 + ' does not exist. Can\'t create edge ' + vertex_1 + ' - ' + vertex_2)
