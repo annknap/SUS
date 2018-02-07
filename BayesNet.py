@@ -237,7 +237,7 @@ class BayesNet:
                 graph.append((node, child))
 
         graph.sort()
-        network_graph = Graph()
+        network_graph = DiGraph()
 
         for edge in graph:
             network_graph.add_edge(edge[0], edge[1])

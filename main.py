@@ -1,3 +1,5 @@
+from time import sleep
+
 from BayesNet import *
 
 if __name__ == '__main__':
