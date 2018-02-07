@@ -58,3 +58,12 @@ class Learning:
 
         Learning.log('Learning bayes net ended. Score achieved: ' + score, debug)
         return bayes_net
+
+    @staticmethod
+    def learn(data_set, metric = 'AIC', algorithm = 'HC', debug = False):
+        if algorithm == 'HC':
+            return Learning.hill_climbing(data_set, metric, debug)
+        elif algorithm == 'TAN':
+            return "TAN"
+        else:
+            return 0

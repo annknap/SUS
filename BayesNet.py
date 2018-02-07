@@ -1,12 +1,13 @@
 from math import *
 from networkx import *
-from matplotlib.pyplot import *
+import matplotlib.pyplot as pyplot
 
 
 class BayesNet:
     def __init__(self, data_set, has_column_names = False):
         self.net = {}
         self.has_column_names = has_column_names
+        self.network_graph = DiGraph()
 
         column_names = data_set[0]
 
@@ -219,8 +220,8 @@ class BayesNet:
         metric = self.H(data_set) - self.K()
         return metric
 
-    def draw_graph(self,
-                   graph_layout = 'shell',
+    def draw_graph(self, subplot,
+                   graph_layout = 'shell1',
                    node_size = 800,
                    node_color = 'blue',
                    node_alpha = 0.2,
@@ -234,31 +235,38 @@ class BayesNet:
 
         for node in self.nodes():
             for child in self.net[node]['children']:
-                graph.append((node, child))
-
-        graph.sort()
-        network_graph = DiGraph()
+                node_label = node
+                child_label = child
+                if len(self.net[node]['parents']) == 0:
+                    node_label += " (root)"
+                if len(self.net[node]['children']) == 0:
+                    node_label = "(" + node_label + ")"
+                if len(self.net[child]['parents']) == 0:
+                    child_label += " (root)"
+                if len(self.net[child]['children']) == 0:
+                    child_label = "(" + child_label + ")"
+                graph.append((node_label, child_label))
 
         for edge in graph:
-            network_graph.add_edge(edge[0], edge[1])
+            self.network_graph.add_edge(edge[0], edge[1])
 
         if graph_layout == 'spring':
-            graph_pos = spring_layout(network_graph)
+            graph_pos = spring_layout(self.network_graph)
+        elif graph_layout == 'shell':
+            graph_pos = shell_layout(self.network_graph)
         elif graph_layout == 'spectral':
-            graph_pos = spectral_layout(network_graph)
+            graph_pos = spectral_layout(self.network_graph)
         elif graph_layout == 'random':
-            graph_pos = random_layout(network_graph)
+            graph_pos = random_layout(self.network_graph)
         else:
-            graph_pos = shell_layout(network_graph)
+            graph_pos = shell_layout(self.network_graph)
 
-        draw_networkx_nodes(network_graph, graph_pos, node_size = node_size,
+        draw_networkx_nodes(self.network_graph, graph_pos, ax = subplot, node_size = node_size,
                             alpha = node_alpha, node_color = node_color)
-        draw_networkx_edges(network_graph, graph_pos, width = edge_thickness,
+        draw_networkx_edges(self.network_graph, graph_pos, ax = subplot, width = edge_thickness,
                             alpha = edge_alpha, edge_color = edge_color)
-        draw_networkx_labels(network_graph, graph_pos, font_size = node_text_size,
+        draw_networkx_labels(self.network_graph, graph_pos, ax = subplot, font_size = node_text_size,
                              font_family = text_font)
-
-        show()
 
     @staticmethod
     def dfs(graph, start, end):
