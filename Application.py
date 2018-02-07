@@ -1,6 +1,8 @@
+import csv
 from Tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from BayesNet import BayesNet
+from tkFileDialog import askopenfilename
 import Learning
 import matplotlib.pyplot as pyplot
 import matplotlib
@@ -13,21 +15,12 @@ class Application(Tk):
     algorithm = "HC"
     debug = True
 
-    def __init__(self, data_set, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         Tk.__init__(self, *args, **kwargs)
 
-        self.data_set = data_set
-        self.bayes_net = BayesNet(self.data_set)
-
-        if self.debug:  # section to delete
-            self.bayes_net.add_edge('A', 'B')
-            self.bayes_net.add_edge('B', 'C')
-            self.bayes_net.add_edge('C', 'D')
-            self.bayes_net.add_edge('A', 'F')
-            self.bayes_net.add_edge('F', 'D')
-            self.bayes_net.add_edge('A', 'E')
-            self.bayes_net.add_edge('E', 'C')
-            self.bayes_net.add_edge('E', 'D')
+        self.file_name = ""
+        self.data_set = None
+        self.bayes_net = None
 
         Tk.wm_title(self, "Bayes Net learning")
         Tk.configure(self)
@@ -36,8 +29,11 @@ class Application(Tk):
         menu_container = Frame(self)
         menu_container.grid(column = 0, row = 0, sticky = N, padx = 5, pady = 10)
 
+        self.file_name_label = Label(menu_container)
+        self.file_name_label.grid(column = 0, row = 0, columnspan = 3, pady = 10)
+
         choose_container = Frame(menu_container)
-        choose_container.grid(column = 1, row = 0, sticky = N, padx = 5, pady = 10)
+        choose_container.grid(column = 1, row = 1, sticky = N, padx = 5, pady = 10)
 
         choose_metric_container = Frame(choose_container)
         choose_metric_container.grid(column = 0, row = 0, sticky = W, padx = 10)
@@ -48,8 +44,8 @@ class Application(Tk):
         chart_container = Frame(self)
         chart_container.grid(column = 0, row = 1, sticky = W)
 
-        open_file_button = Button(menu_container, text = "Choose file", command = self.learn)
-        open_file_button.grid(column = 0, row = 0, sticky = E, padx = 15)
+        open_file_button = Button(menu_container, text = "Choose file", command = self.choose_file)
+        open_file_button.grid(column = 0, row = 1, sticky = E, padx = 15)
 
         self.selected_metric = StringVar()
         AIC_radio_button = Radiobutton(choose_metric_container, text = "AIC", variable = self.selected_metric,
@@ -72,7 +68,7 @@ class Application(Tk):
         TAN_radio_button.pack(side = "top", anchor = W)
 
         learn_button = Button(menu_container, text = "Learn", command = self.learn)
-        learn_button.grid(column = 2, row = 0, sticky = E, padx = 15)
+        learn_button.grid(column = 2, row = 1, sticky = E, padx = 15)
 
         chart = pyplot.Figure(figsize = (6, 6), dpi = 100)
         self.sub_chart = chart.add_subplot(111)
@@ -85,13 +81,30 @@ class Application(Tk):
     def change_algorithm(self):
         self.algorithm = self.selected_algorithm.get()
 
+    def choose_file(self):
+        self.file_name = askopenfilename()
+        self.file_name_label.configure(text = self.file_name)
+        self.data_set = Application.load_from_csv(self.file_name)
+        self.bayes_net = BayesNet(self.data_set)
+
     def learn(self):
-        self.sub_chart.cla()
-        pyplot.axis('off')
-        # Learning.learn(self.data_set, self.metric, self.algorithm, self.debug)
-        self.bayes_net.draw_graph(self.sub_chart)
-        self.canvas.show()
-        self.canvas.get_tk_widget().pack(side = 'bottom', fill = 'both', expand = True)
+        if self.data_set is not None:
+            self.sub_chart.cla()
+            pyplot.axis('off')
+            self.bayes_net = Learning.learn(self.data_set, self.metric, self.algorithm, self.debug)
+            self.bayes_net.draw_graph(self.sub_chart)
+            self.canvas.show()
+            self.canvas.get_tk_widget().pack(side = 'bottom', fill = 'both', expand = True)
+
+    @staticmethod
+    def load_from_csv(file_name):
+        rows = csv.reader(open(file_name, "rb"))
+        data_set = list(rows)
+
+        for i in range(len(data_set)):
+            data_set[i] = [float(x) for x in data_set[i]]
+
+        return data_set
 
     def _quit(self):
         self.quit()

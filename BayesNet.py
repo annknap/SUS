@@ -1,11 +1,9 @@
 from math import *
 from networkx import *
-import matplotlib.pyplot as pyplot
 
 
 class BayesNet:
     def __init__(self, data_set, has_column_names = False):
-
         self.net = {}
         self.has_column_names = has_column_names
         self.network_graph = DiGraph()
@@ -22,7 +20,7 @@ class BayesNet:
 
         self.vertexes = column_names
 
-        self.data ={}
+        self.data = {}
 
         for column in range(0, len(data_set[0])):
             if has_column_names:
@@ -33,13 +31,11 @@ class BayesNet:
             for row in range(start, len(data_set)):
                 self.data[column_names[column]].append(data_set[row][column])
 
-
         for vertex in column_names:
             self.net[vertex] = {'possible_values': [],
                                 'children': [],
                                 'parents': [],
                                 'probabilities': []}
-
 
     def add_edge_no_directions(self, vertex_1, vertex_2, edges, weight):
         if vertex_1 not in self.net:
@@ -57,7 +53,6 @@ class BayesNet:
         return edges
 
     def check_cycles_no_directions(self, edges, vertex_1, vertex_2):
-
         new_edges = edges
         if vertex_1 not in new_edges.keys():
             new_edges[vertex_1] = {}
@@ -75,40 +70,25 @@ class BayesNet:
                 if node not in graph[vertex]:
                     graph[vertex].append(node)
 
-
         visited = []
         parent = -1
         node = vertex_1
 
-        is_cyclic = self.cycles_undirected(self, graph, node, visited, parent)
+        is_cyclic = self.cycles_undirected(graph, node, visited, parent)
 
         return is_cyclic
 
     def cycles_undirected(self, graph, node, visited, parent):
-
         visited.append(node)
 
         for i in graph[node]:
             if i not in visited:
-                if (self.cycles_undirected(self, graph, i, visited, node)):
+                if self.cycles_undirected(graph, i, visited, node):
                     return True
-            elif parent!=i:
+            elif parent != i:
                 return True
 
         return False
-    """
-    def dfs(self, graph, node, vertex_1, visited):
-
-
-        if node not in visited:
-            if node == vertex_1 and len(visited) == 0:
-                pass
-            else:
-                visited.append(node)
-            for n in graph[node]:
-                self.dfs(self, graph, n, vertex_1, visited)
-        return visited
-    """
 
     def add_edge(self, vertex, new_child):
         if vertex not in self.net:
