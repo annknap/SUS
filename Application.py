@@ -3,7 +3,8 @@ from Tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from BayesNet import BayesNet
 from tkFileDialog import askopenfilename
-import Learning
+#import Learning
+from Learning import *
 import matplotlib.pyplot as pyplot
 import matplotlib
 

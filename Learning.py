@@ -1,7 +1,8 @@
 from BayesNet import *
-
+import math
 
 class Learning:
+
     @staticmethod
     def log(message, debug = True):
         if debug:
@@ -66,6 +67,8 @@ class Learning:
 
     @staticmethod
     def TAN(data_set, metric = '', debug = False):
+
+        
         bayes_net = BayesNet(data_set)
 
         n = bayes_net.get_data_set_rows_number(data_set)
@@ -74,77 +77,88 @@ class Learning:
             weights[node_i] = {}
             for node_j in bayes_net.nodes():
 
-                values_i = bayes_net.net[node_i]['possible_values']
-                values_j = bayes_net.net[node_j]['possible_values']
-                values_i.sort()
-                values_j.sort()
+                if node_i != node_j:
+                    values_i = bayes_net.net[node_i]['possible_values']
+                    values_j = bayes_net.net[node_j]['possible_values']
 
-                mutual_information = 0
+                    mutual_information = 0
 
-                for i in values_i:
-                    for j in values_j:
-                        Pi = 0
-                        Pj = 0
-                        for value in bayes_net.data[node_i]:
-                            if value == i:
-                                Pi += 1
-                        for value in bayes_net.data[node_j]:
-                            if value == j:
-                                Pj += 1
-                        Pij = (Pi + Pj)/len(bayes_net.data[node_i])
-                        Pi = Pi/len(bayes_net.data[node_i])
-                        Pj = Pj/len(bayes_net.data[node_i])
+                    for i in values_i:
+                        for j in values_j:
+                            Pi = 0
+                            Pj = 0
+                            Pi = bayes_net.data[node_i].count(i)
+                            Pj = bayes_net.data[node_j].count(j)
 
-                        mutual_information += Pij*math.log(Pij/(Pi*Pj))
+                            l = float(len(bayes_net.data[node_i]))
+                            Pij = float((Pi + Pj)/l)
+                            Pi = float(Pi/l)
+                            Pj = float(Pj/l)
 
-                weights[node_i][node_j] = mutual_information
+                            mutual_information += Pij*math.log(Pij/(Pi*Pj))
 
+                    weights[node_i][node_j] = mutual_information
         edges = {}
         no_cycles = True
-        possible_edges_num = len(bayes_net.nodes())*(len(bayes_net.nodes()) - 1)/2
+        possible_edges_num = len(bayes_net.net.keys())*(len(bayes_net.net.keys()) - 1)/2
 
         while possible_edges_num > 0:
-            causing_cycle = True
-            i = possible_edges_num
+            causing_cycle = False
+            check_next = True
+            i = 0
             create_edge = False
             max_weight = 0
 
-            while causing_cycle:
+            vertex_1 = None
+            vertex_2 = None
+
+            while check_next:
                 max_weight = 0
                 for node_i in bayes_net.nodes():
                     for node_j in bayes_net.nodes():
 
-                        if node_i not in edges.keys() or node_j not in edges[node_i].keys():
+                        if (node_i not in edges.keys() or node_j not in edges.keys() or node_j not in edges[node_i].keys() or node_i not in edges[node_j].keys()) and node_i != node_j:
                             if weights[node_i][node_j] > max_weight:
                                 max_weight = weights[node_i][node_j]
+                                vertex_1 = node_i
+                                vertex_2 = node_j
+                causing_cycle = bayes_net.check_cycles_no_directions(edges, vertex_1, vertex_2)
 
-                if not bayes_net.check_cycles_no_directions(edges, node_i, node_j):
+                if causing_cycle:
                     create_edge = True
+                    causing_cycle = False
+                    check_next = False
                     break
                 else:
                     i += 1
 
-                if i == possible_edges_num: break
+                if i == possible_edges_num:
+                    check_next = False
+                    i = 0
 
             if create_edge:
-                edges = bayes_net.add_edge_no_directions(node_i, node_j, edges, max_weight)
+                edges = bayes_net.add_edge_no_directions(vertex_1, vertex_2, edges, max_weight)
             possible_edges_num -= 1
 
-        root = bayes_net.nodes()[0]
+        root = bayes_net.net.keys()[0]
 
         possible = []
-
-        while len(edges.keys()) > 0:
-
-            if root in edges.keys():
-                for child in edges[root]:
+        l = len(edges.keys())
+        while l > 0:
+            copy_dict = copy.deepcopy(edges)
+            if root in copy_dict.keys():
+                for child in copy_dict[root].keys():
                     bayes_net.add_edge(root, child)
                     del edges[root][child]
                     del edges[child][root]
                     possible.append(child)
 
             if len(possible) > 0:
+
                 root = possible[0]
                 del possible[0]
+
+            l = len (possible)
+
 
         return bayes_net

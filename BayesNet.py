@@ -1,5 +1,6 @@
 from math import *
 from networkx import *
+import copy
 
 
 class BayesNet:
@@ -37,6 +38,9 @@ class BayesNet:
                                 'parents': [],
                                 'probabilities': []}
 
+            values = set(self.data[vertex])
+            self.set_values(vertex, values)
+
     def add_edge_no_directions(self, vertex_1, vertex_2, edges, weight):
         if vertex_1 not in self.net:
             print('Vertex ' + vertex_1 + ' does not exist. Can\'t create edge ' + vertex_1 + ' - ' + vertex_2)
@@ -45,6 +49,7 @@ class BayesNet:
         else:
             if vertex_1 not in edges.keys():
                 edges[vertex_1] = {}
+            if vertex_2 not in edges.keys():
                 edges[vertex_2] = {}
 
             edges[vertex_1][vertex_2] = weight
@@ -53,13 +58,17 @@ class BayesNet:
         return edges
 
     def check_cycles_no_directions(self, edges, vertex_1, vertex_2):
-        new_edges = edges
+
+        new_edges = copy.deepcopy(edges)
         if vertex_1 not in new_edges.keys():
             new_edges[vertex_1] = {}
+
+        if vertex_2 not in new_edges.keys():
             new_edges[vertex_2] = {}
+
+
         new_edges[vertex_1][vertex_2] = 0
         new_edges[vertex_2][vertex_1] = 0
-
         graph = {}
 
         for vertex in new_edges.keys():
@@ -73,7 +82,6 @@ class BayesNet:
         visited = []
         parent = -1
         node = vertex_1
-
         is_cyclic = self.cycles_undirected(graph, node, visited, parent)
 
         return is_cyclic
@@ -83,12 +91,12 @@ class BayesNet:
 
         for i in graph[node]:
             if i not in visited:
-                if self.cycles_undirected(graph, i, visited, node):
-                    return True
+                if not self.cycles_undirected(graph, i, visited, node):
+                    return False
             elif parent != i:
-                return True
+                return False
 
-        return False
+        return True
 
     def add_edge(self, vertex, new_child):
         if vertex not in self.net:
@@ -249,17 +257,17 @@ class BayesNet:
 
         value = 0
         for i in range(1, vertex_number):
-            for j in range(1, self.q(self.net[self.vertexes[i]])):
-                for k in range(1, self.r(self.net[self.vertexes[i]])):
+            for j in range(self.q(self.net[self.vertexes[i]]['possible_values'])):
+                for k in range(self.r(self.net[self.vertexes[i]]['possible_values'])):
                     N = self.get_data_set_rows_number(data_set)
                     Nij = 0
                     for row in data_set:
-                        if self.pa(self.net[self.vertexes[i]]) == row[j]:
+                        if self.pa(self.net[self.vertexes[i]]['possible_values']) == row[j]:
                             Nij += 1
                     Nijk = 0
                     for row in data_set:
-                        if self.pa(self.net[self.vertexes[i]]) == row[j] and self.r(
-                                self.net[self.vertexes[i]] ==
+                        if self.pa(self.net[self.vertexes[i]]['possible_values']) == row[j] and self.r(
+                                self.net[self.vertexes[i]]['possible_values'] ==
                                 row[k]):
                             Nijk += 1
 
