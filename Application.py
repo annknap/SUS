@@ -70,6 +70,9 @@ class Application(Tk):
         learn_button = Button(menu_container, text = "Learn", command = self.learn)
         learn_button.grid(column = 2, row = 1, sticky = E, padx = 15)
 
+        self.metric_label = Label(menu_container)
+        self.metric_label.grid(column = 2, row = 2)
+
         chart = pyplot.Figure(figsize = (6, 6), dpi = 100)
         self.sub_chart = chart.add_subplot(111)
 
@@ -93,6 +96,7 @@ class Application(Tk):
             pyplot.axis('off')
             self.bayes_net = Learning.learn(self.data_set, self.metric, self.algorithm, self.debug)
             self.bayes_net.draw_graph(self.sub_chart)
+            self.metric_label.configure(text = str(self.bayes_net.AIC(self.data_set)))
             self.canvas.show()
             self.canvas.get_tk_widget().pack(side = 'bottom', fill = 'both', expand = True)
 
