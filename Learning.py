@@ -2,6 +2,7 @@ from BayesNet import *
 import math
 import numpy as np
 
+
 class Learning:
 
     @staticmethod
@@ -28,7 +29,9 @@ class Learning:
                                 bayes_net.delete_edge(node_j, node_i)
                             else:
                                 score = new_score
-                                Learning.log('Adding edge ' + node_j + ' -> ' + node_i + '. New score: ' + score, debug)
+                                Learning.log(
+                                    'Adding edge ' + str(node_j) + ' -> ' + str(node_i) + '. New score: ' + str(score),
+                                    debug)
 
             for node_i in bayes_net.nodes():
                 for node_j in bayes_net.pa(node_i):
@@ -38,7 +41,8 @@ class Learning:
                         bayes_net.add_edge(node_j, node_i)
                     else:
                         score = new_score
-                        Learning.log('Deleting edge ' + node_j + ' -> ' + node_i + '. New score: ' + score, debug)
+                        Learning.log(
+                            'Deleting edge ' + str(node_j) + ' -> ' + str(node_i) + '. New score: ' + str(score), debug)
 
             for node_i in bayes_net.nodes():
                 for node_j in bayes_net.pa(node_i):
@@ -49,12 +53,14 @@ class Learning:
                             bayes_net.reverse_edge(node_j, node_i)
                         else:
                             score = new_score
-                            Learning.log('Reversing edge ' + node_j + ' -> ' + node_i + '. New score: ' + score, debug)
+                            Learning.log(
+                                'Reversing edge ' + str(node_j) + ' -> ' + str(node_i) + '. New score: ' + str(score),
+                                debug)
 
             if score < max_score:
                 break
 
-        Learning.log('Learning bayes net ended. Score achieved: ' + score, debug)
+        Learning.log('Learning bayes net ended. Score achieved: ' + str(score), debug)
         return bayes_net
 
     @staticmethod
@@ -71,9 +77,9 @@ class Learning:
 
         Learning.log('TAN: Learning bayes net started.', debug)
         data_set_1 = np.array(data_set)
-        class_values = data_set_1[:,len(data_set[0])-1]
+        class_values = data_set_1[:, len(data_set[0]) - 1]
 
-        data_set = data_set_1[:,:len(data_set[0])-1]
+        data_set = data_set_1[:, :len(data_set[0]) - 1]
 
         bayes_net = BayesNet(data_set)
 
@@ -86,7 +92,7 @@ class Learning:
         weights = {}
         l = float(len(class_values))
 
-        Learning.log('TAN: Mutual informations calculating in progress.', debug)
+        Learning.log('TAN: Mutual information calculating in progress.', debug)
         for node_i in bayes_net.nodes():
             weights[node_i] = {}
             for node_j in bayes_net.nodes():
@@ -106,22 +112,20 @@ class Learning:
                     xxx = 0
 
                     for k in range(0, len(possible_class_values)):
-                        for i in range(0,len(values_i)):
-                            for j in range(0,len(values_j)):
+                        for i in range(0, len(values_i)):
+                            for j in range(0, len(values_j)):
                                 count_i = float(bayes_net.data[node_i].count(values_i[i]))
                                 count_j = float(bayes_net.data[node_j].count(values_j[j]))
                                 count_k = float(np.count_nonzero(class_values == possible_class_values[k]))
 
                                 count_x = 0.0
                                 count_z = 0.0
-                                for index in range(0,len(bayes_net.data[node_i])):
+                                for index in range(0, len(bayes_net.data[node_i])):
                                     if bayes_net.data[node_i][index] == values_i[i]:
                                         if class_values[index] == possible_class_values[k]:
                                             count_z += 1.0
                                             if bayes_net.data[node_j][index] == values_j[j]:
                                                 count_x += 1.0
-
-
 
                                 count_y = 0.0
                                 for index in range(0, len(bayes_net.data[node_j])):
@@ -129,16 +133,16 @@ class Learning:
                                         if class_values[index] == possible_class_values[k]:
                                             count_y += 1.0
 
-                                Pi = float(count_i / l)
-                                Pj = float(count_j / l)
-                                Pk = float(count_k / l)
+                                Pi = float(count_i/l)
+                                Pj = float(count_j/l)
+                                Pk = float(count_k/l)
 
-                                Pijk = Pi * Pj * Pk
+                                Pijk = Pi*Pj*Pk
 
-                                Px = float(count_x / count_k)
+                                Px = float(count_x/count_k)
 
-                                Pz = float(count_z / count_k)
-                                Py = float(count_y / count_k)
+                                Pz = float(count_z/count_k)
+                                Py = float(count_y/count_k)
 
                                 if Pz == 0.0:
                                     Pz = float(pow(10, -20))
@@ -149,11 +153,12 @@ class Learning:
                                 if Px == 0.0:
                                     Px = float(pow(10, -20))
 
-                                mutual_information = mutual_information + Pijk * log(float(Px/(Pz*Py)))
-                                #print mutual_information
+                                mutual_information = mutual_information + Pijk*log(float(Px/(Pz*Py)))
+                                # print mutual_information
 
                     weights[node_i][node_j] = mutual_information
-                    Learning.log('TAN: Mutual information for nodes: ' + node_i + " " + node_j + ' : ' + str(weights[node_i][node_j]), debug)
+                    Learning.log('TAN: Mutual information for nodes: ' + str(node_i) + " " + str(node_j) + ' : ' + str(
+                        weights[node_i][node_j]), debug)
 
         Learning.log('TAN: Mutual informations calculating done.', debug)
         print weights
@@ -178,8 +183,8 @@ class Learning:
                     for node_j in bayes_net.nodes():
 
                         to_pass = False
-                        if (node_i not in not_to_be_checked.keys()):
-                            if (node_j not in not_to_be_checked.keys()):
+                        if node_i not in not_to_be_checked.keys():
+                            if node_j not in not_to_be_checked.keys():
                                 to_pass = True
                             elif node_i not in not_to_be_checked[node_j]:
                                 to_pass = True
@@ -187,13 +192,16 @@ class Learning:
                             to_pass = True
 
                         if to_pass:
-                                if (node_i not in edges.keys() or node_j not in edges.keys() or node_j not in edges[node_i].keys() or node_i not in edges[node_j].keys()) and node_i != node_j:
-                                    if weights[node_i][node_j] > max_weight:
+                            if (node_i not in edges.keys() or
+                                node_j not in edges.keys() or
+                                node_j not in edges[node_i].keys() or
+                                node_i not in edges[node_j].keys())\
+                                    and node_i != node_j:
+                                if weights[node_i][node_j] > max_weight:
+                                    max_weight = weights[node_i][node_j]
 
-                                        max_weight = weights[node_i][node_j]
-
-                                        vertex_1 = node_i
-                                        vertex_2 = node_j
+                                    vertex_1 = node_i
+                                    vertex_2 = node_j
                 print "max weight: ", max_weight, " nodes: ", vertex_1, vertex_2
                 causing_cycle = bayes_net.check_cycles_no_directions(edges, vertex_1, vertex_2)
 
@@ -201,8 +209,8 @@ class Learning:
                     create_edge = True
                     causing_cycle = False
                     check_next = False
-                    #possible_edges_num -= 1
-                    #break
+                    # possible_edges_num -= 1
+                    # break
                 else:
                     i += 1
                     if vertex_1 not in not_to_be_checked.keys():
@@ -212,7 +220,6 @@ class Learning:
 
                     not_to_be_checked[vertex_1].append(vertex_2)
                     not_to_be_checked[vertex_2].append(vertex_1)
-
 
                 if i == possible_edges_num:
                     check_next = False
@@ -239,11 +246,10 @@ class Learning:
                     possible.append(child)
 
             if len(possible) > 0:
-
                 root = possible[0]
                 del possible[0]
 
-            l = len (possible)
+            l = len(possible)
 
         Learning.log('TAN: Tree building done.', debug)
 
@@ -260,7 +266,8 @@ class Learning:
         bayes_net.net['root']['probabilities'] = []
 
         for node in bayes_net.net.keys():
-            print "node: ", node, " parents: ", bayes_net.net[node]['parents'], " children: ", bayes_net.net[node]['children']
+            print "node: ", node, " parents: ", bayes_net.net[node]['parents'], " children: ", bayes_net.net[node][
+                'children']
 
         Learning.log('TAN: Creating TAN tree done.', debug)
         score = bayes_net.score(data_set, metric)

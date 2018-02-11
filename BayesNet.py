@@ -43,9 +43,11 @@ class BayesNet:
 
     def add_edge_no_directions(self, vertex_1, vertex_2, edges, weight):
         if vertex_1 not in self.net:
-            print('Vertex ' + vertex_1 + ' does not exist. Can\'t create edge ' + vertex_1 + ' - ' + vertex_2)
+            print('Vertex ' + str(vertex_1) + ' does not exist. Can\'t create edge ' + str(vertex_1) + ' - ' + str(
+                vertex_2))
         elif vertex_2 not in self.net:
-            print('Vertex ' + vertex_2 + ' does not exist. Can\'t create edge ' + vertex_1 + ' - ' + vertex_2)
+            print('Vertex ' + str(vertex_2) + ' does not exist. Can\'t create edge ' + str(vertex_1) + ' - ' + str(
+                vertex_2))
         else:
             if vertex_1 not in edges.keys():
                 edges[vertex_1] = {}
@@ -65,7 +67,6 @@ class BayesNet:
 
         if vertex_2 not in new_edges.keys():
             new_edges[vertex_2] = {}
-
 
         new_edges[vertex_1][vertex_2] = 0
         new_edges[vertex_2][vertex_1] = 0
@@ -100,70 +101,74 @@ class BayesNet:
 
     def add_edge(self, vertex, new_child):
         if vertex not in self.net:
-            print('Vertex ' + vertex + ' does not exist. Can\'t create edge ' + vertex + ' -> ' + new_child)
+            print('Vertex ' + str(vertex) + ' does not exist. Can\'t create edge ' + str(vertex) + ' -> ' + str(
+                new_child))
         elif new_child not in self.net:
-            print('Vertex ' + new_child + ' does not exist. Can\'t create edge ' + vertex + ' -> ' + new_child)
+            print('Vertex ' + str(new_child) + ' does not exist. Can\'t create edge ' + str(vertex) + ' -> ' + str(
+                new_child))
         elif vertex in self.net[new_child]['parents'] and new_child in self.net[vertex]['children']:
-            print('Edge ' + vertex + ' -> ' + new_child + ' already exists')
+            print('Edge ' + str(vertex) + ' -> ' + str(new_child) + ' already exists')
         elif vertex not in self.net[new_child]['parents'] and new_child in self.net[vertex]['children']:
-            print('Wrong net structure. Vertex ' + vertex + ' is not a parent of vertex ' + new_child +
-                  ' but vertex ' + new_child + ' is a child of vertex ' + vertex)
+            print('Wrong net structure. Vertex ' + str(vertex) + ' is not a parent of vertex ' + str(new_child) +
+                  ' but vertex ' + str(new_child) + ' is a child of vertex ' + str(vertex))
         elif vertex in self.net[new_child]['parents'] and new_child not in self.net[vertex]['children']:
-            print('Wrong net structure. Vertex ' + new_child + ' is not a child of vertex ' + vertex +
-                  ' but vertex ' + vertex + ' is a parent of vertex ' + new_child)
+            print('Wrong net structure. Vertex ' + str(new_child) + ' is not a child of vertex ' + str(vertex) +
+                  ' but vertex ' + str(vertex) + ' is a parent of vertex ' + str(new_child))
         elif self.check_cycle(vertex, new_child) > 0:
-            print('Adding edge ' + vertex + ' -> ' + new_child + ' will create a cycle')
+            print('Adding edge ' + str(vertex) + ' -> ' + str(new_child) + ' will create a cycle')
         elif vertex not in self.net[new_child]['parents'] and new_child not in self.net[vertex]['children']:
             self.net[vertex]['children'].append(new_child)
             self.net[new_child]['parents'].append(vertex)
         else:
-            print('Unknown error during adding edge ' + vertex + ' -> ' + new_child)
+            print('Unknown error during adding edge ' + str(vertex) + ' -> ' + str(new_child))
 
     def delete_edge(self, vertex, old_child):
         if vertex not in self.net:
-            print('Vertex ' + vertex + ' does not exist. Can\'t delete edge ' + vertex + ' -> ' + old_child)
+            print('Vertex ' + str(vertex) + ' does not exist. Can\'t delete edge ' + str(vertex) + ' -> ' + str(
+                old_child))
         elif old_child not in self.net:
-            print('Vertex ' + old_child + ' does not exist. Can\'t delete edge ' + vertex + ' -> ' + old_child)
+            print('Vertex ' + str(old_child) + ' does not exist. Can\'t delete edge ' + str(vertex) + ' -> ' + str(
+                old_child))
         elif vertex not in self.net[old_child]['parents'] and old_child not in self.net[vertex]['children']:
-            print('Edge ' + vertex + ' -> ' + old_child + ' does not exist')
+            print('Edge ' + str(vertex) + ' -> ' + str(old_child) + ' does not exist')
         elif vertex not in self.net[old_child]['parents'] and old_child in self.net[vertex]['children']:
-            print('Wrong net structure. Vertex ' + vertex + ' is not a parent of vertex ' + old_child +
-                  ' but vertex ' + old_child + ' is a child of vertex ' + vertex)
+            print('Wrong net structure. Vertex ' + str(vertex) + ' is not a parent of vertex ' + str(old_child) +
+                  ' but vertex ' + str(old_child) + ' is a child of vertex ' + str(vertex))
         elif vertex in self.net[old_child]['parents'] and old_child not in self.net[vertex]['children']:
-            print('Wrong net structure. Vertex ' + old_child + ' is not a child of vertex ' + vertex +
-                  ' but vertex ' + vertex + ' is a parent of vertex ' + old_child)
+            print('Wrong net structure. Vertex ' + str(old_child) + ' is not a child of vertex ' + str(vertex) +
+                  ' but vertex ' + str(vertex) + ' is a parent of vertex ' + str(old_child))
         elif vertex in self.net[old_child]['parents'] and old_child in self.net[vertex]['children']:
             self.net[vertex]['children'].remove(old_child)
             self.net[old_child]['parents'].remove(vertex)
         else:
-            print('Unknown error during deleting edge ' + vertex + ' -> ' + old_child)
+            print('Unknown error during deleting edge ' + str(vertex) + ' -> ' + str(old_child))
 
     def reverse_edge(self, parent, child):
         if parent not in self.net:
-            print('Vertex ' + parent + ' does not exist. Can\'t reverse edge ' + parent + ' -> ' + child)
+            print('Vertex ' + str(parent) + ' does not exist. Can\'t reverse edge ' + str(parent) + ' -> ' + str(child))
         elif child not in self.net:
-            print('Vertex ' + child + ' does not exist. Can\'t reverse edge ' + parent + ' -> ' + child)
+            print('Vertex ' + str(child) + ' does not exist. Can\'t reverse edge ' + str(parent) + ' -> ' + str(child))
         elif parent not in self.net[child]['parents'] and child not in self.net[parent]['children']:
-            print('Edge ' + parent + ' -> ' + child + ' does not exist')
+            print('Edge ' + str(parent) + ' -> ' + str(child) + ' does not exist')
         elif parent not in self.net[child]['parents'] and child in self.net[parent]['children']:
-            print('Wrong net structure. Vertex ' + parent + ' is not a parent of vertex ' + child +
-                  ' but vertex ' + child + ' is a child of vertex ' + parent)
+            print('Wrong net structure. Vertex ' + str(parent) + ' is not a parent of vertex ' + str(child) +
+                  ' but vertex ' + str(child) + ' is a child of vertex ' + str(parent))
         elif parent in self.net[child]['parents'] and child not in self.net[parent]['children']:
-            print('Wrong net structure. Vertex ' + child + ' is not a child of vertex ' + parent +
-                  ' but vertex ' + parent + ' is a parent of vertex ' + child)
+            print('Wrong net structure. Vertex ' + str(child) + ' is not a child of vertex ' + str(parent) +
+                  ' but vertex ' + str(parent) + ' is a parent of vertex ' + str(child))
         elif self.check_cycle(child, parent, True) > 0:
-            print('Reversing edge ' + parent + ' -> ' + child + ' will create a cycle')
+            print('Reversing edge ' + str(parent) + ' -> ' + str(child) + ' will create a cycle')
         elif parent in self.net[child]['parents'] and child in self.net[parent]['children']:
             self.net[parent]['children'].remove(child)
             self.net[parent]['parents'].append(child)
             self.net[child]['parents'].remove(parent)
             self.net[child]['children'].append(parent)
         else:
-            print('Unknown error during reversing edge ' + parent + ' -> ' + child)
+            print('Unknown error during reversing edge ' + str(parent) + ' -> ' + str(child))
 
     def set_values(self, vertex, values):
         if vertex not in self.net:
-            print('Vertex ' + vertex + ' does not exist. Can\'t set it\'s values')
+            print('Vertex ' + str(vertex) + ' does not exist. Can\'t set it\'s values')
         else:
             self.net[vertex]['possible_values'] = values
 
@@ -271,18 +276,18 @@ class BayesNet:
                         for parent_value in parent_values:
                             if parent_value == row[j]:
                                 Nij += 1
-                                possible_node_values = self.r(self, nodes[i])
+                                possible_node_values = self.r(nodes[i])
                                 for possible_node_value in possible_node_values:
                                     if possible_node_value == row[k]:
                                         Nijk += 1
 
                     if Nij == 0.0:
-                        Nij = pow(10,-20)
+                        Nij = pow(10, -20)
 
                     if Nijk == 0.0:
-                        Nijk = pow(10,-20)
+                        Nijk = pow(10, -20)
 
-                    value += Nijk/N* log(Nijk/Nij)
+                    value += Nijk/N*log(Nijk/Nij)
 
             value *= -N
         return value
