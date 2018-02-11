@@ -231,7 +231,6 @@ class BayesNet:
     def pa(self, vertex):
         return self.net[vertex]['parents']
 
-    # TODO: adjust to real data sets
     def get_data_set_rows_number(self, data_set):
         number = len(data_set)
         if self.has_column_names:
