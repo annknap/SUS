@@ -286,7 +286,7 @@ class BayesNet:
                     if Nijk == 0.0:
                         Nijk = pow(10, -20)
 
-                    value += Nijk/N*log(Nijk/Nij)
+                    value += (Nijk/N)*log(Nijk/Nij)
 
             value *= -N
         return value
@@ -304,11 +304,13 @@ class BayesNet:
             return 0
 
     def AIC(self, data_set):
-        metric = self.H(data_set) - self.K()
+        metric = self.H(data_set) + self.K()
+        ll=self.H(data_set)
+        penalty=self.K()
         return metric
 
     def draw_graph(self, subplot,
-                   graph_layout = 'shell1',
+                   graph_layout = 'shell',
                    node_size = 800,
                    node_color = 'blue',
                    node_alpha = 0.2,
