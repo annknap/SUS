@@ -271,7 +271,7 @@ class BayesNet:
                         for parent_value in parent_values:
                             if parent_value == row[j]:
                                 Nij += 1
-                                possible_node_values = self.r(self, nodes[i])
+                                possible_node_values = self.net[nodes[i]]['possible_values']
                                 for possible_node_value in possible_node_values:
                                     if possible_node_value == row[k]:
                                         Nijk += 1
