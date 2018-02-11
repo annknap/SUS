@@ -1,25 +1,26 @@
 import csv
 from Tkinter import *
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from BayesNet import BayesNet
-from tkFileDialog import askopenfilename
-#import Learning
+from tkFileDialog import askopenfilename, asksaveasfilename
 from Learning import *
-import matplotlib.pyplot as pyplot
 import matplotlib
 
 matplotlib.use("TkAgg")
+import matplotlib.pyplot as pyplot
 
 
 class Application(Tk):
     metric = "AIC"
-    algorithm = "HC"
+    algorithm = "HC_O"
     debug = True
 
     def __init__(self, *args, **kwargs):
         Tk.__init__(self, *args, **kwargs)
 
         self.file_name = ""
+        self.save_file_name = ""
+        self.actual_figure = None
         self.data_set = None
         self.bayes_net = None
 
@@ -58,11 +59,15 @@ class Application(Tk):
         MDL_radio_button.pack(side = "top", anchor = W)
 
         self.selected_algorithm = StringVar()
-        HC_radio_button = Radiobutton(choose_algorithm_container, text = "Hill Climbing",
-                                      variable = self.selected_algorithm, value = "HC",
-                                      command = self.change_algorithm)
-        HC_radio_button.select()
-        HC_radio_button.pack(side = "top", anchor = W)
+        HC_O_radio_button = Radiobutton(choose_algorithm_container, text = "Hill Climbing with one loops",
+                                        variable = self.selected_algorithm, value = "HC_O",
+                                        command = self.change_algorithm)
+        HC_O_radio_button.select()
+        HC_O_radio_button.pack(side = "top", anchor = W)
+        HC_M_radio_button = Radiobutton(choose_algorithm_container, text = "Hill Climbing with multiple loop",
+                                        variable = self.selected_algorithm, value = "HC_M",
+                                        command = self.change_algorithm)
+        HC_M_radio_button.pack(side = "top", anchor = W)
         TAN_radio_button = Radiobutton(choose_algorithm_container, text = "TAN", variable = self.selected_algorithm,
                                        value = "TAN",
                                        command = self.change_algorithm)
@@ -71,13 +76,19 @@ class Application(Tk):
         learn_button = Button(menu_container, text = "Learn", command = self.learn)
         learn_button.grid(column = 2, row = 1, sticky = E, padx = 15)
 
+        # save_button = Button(menu_container, text = "Save chart", command = self.save_file)
+        # save_button.grid(column = 2, row = 2, sticky = E, padx = 15)
+
         self.metric_label = Label(menu_container)
-        self.metric_label.grid(column = 2, row = 2)
+        self.metric_label.grid(column = 1, row = 2)
 
-        chart = pyplot.Figure(figsize = (6, 6), dpi = 100)
-        self.sub_chart = chart.add_subplot(111)
+        self.chart = pyplot.Figure(figsize = (5, 5), dpi = 100)
+        self.sub_chart = self.chart.add_subplot(111)
 
-        self.canvas = FigureCanvasTkAgg(chart, chart_container)
+        self.canvas = FigureCanvasTkAgg(self.chart, chart_container)
+
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, chart_container)
+        self.toolbar.update()
 
     def change_metric(self):
         self.metric = self.selected_metric.get()
@@ -91,14 +102,20 @@ class Application(Tk):
         self.data_set = Application.load_from_csv(self.file_name)
         self.bayes_net = BayesNet(self.data_set)
 
+    def save_file(self):
+        self.save_file_name = asksaveasfilename(initialdir = self.file_name, title = "Save",
+                                                filetypes = (("PNG files", "*.png"), ("all files", "*.*")))
+        pyplot.savefig(self.save_file_name, bbox_inches = 'tight')
+
     def learn(self):
         if self.data_set is not None:
             self.sub_chart.cla()
             pyplot.axis('off')
             self.bayes_net = Learning.learn(self.data_set, self.metric, self.algorithm, self.debug)
             self.bayes_net.draw_graph(self.sub_chart)
-            self.metric_label.configure(text = str(self.bayes_net.AIC(self.data_set)))
+            self.metric_label.configure(text = str(self.bayes_net.score(self.data_set, self.metric)))
             self.canvas.show()
+            self.toolbar.update()
             self.canvas.get_tk_widget().pack(side = 'bottom', fill = 'both', expand = True)
 
     @staticmethod

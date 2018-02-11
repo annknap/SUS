@@ -1,5 +1,4 @@
 from BayesNet import *
-import math
 import numpy as np
 
 
@@ -11,7 +10,7 @@ class Learning:
             print(message)
 
     @staticmethod
-    def hill_climbing(data_set, metric = 'AIC', debug = False):
+    def hill_climbing_multiple_loops(data_set, metric = 'AIC', debug = False):
         bayes_net = BayesNet(data_set)
         score = bayes_net.score(data_set, metric)
 
@@ -42,31 +41,87 @@ class Learning:
                     else:
                         score = new_score
                         Learning.log(
-                            'Deleting edge ' + str(node_j) + ' -> ' + str(node_i) + '. New score: ' + str(score), debug)
+                            'Deleting edge ' + str(node_j) + ' -> ' + str(node_i) + '. New score: ' + str(score),
+                            debug)
 
             for node_i in bayes_net.nodes():
                 for node_j in bayes_net.pa(node_i):
-                    if bayes_net.check_cycle(node_i, node_j, True):
+                    if not bayes_net.check_cycle(node_i, node_j, True):
                         bayes_net.reverse_edge(node_j, node_i)
                         new_score = bayes_net.score(data_set, metric)
                         if new_score <= score:
-                            bayes_net.reverse_edge(node_j, node_i)
+                            bayes_net.reverse_edge(node_i, node_j)
                         else:
                             score = new_score
                             Learning.log(
                                 'Reversing edge ' + str(node_j) + ' -> ' + str(node_i) + '. New score: ' + str(score),
                                 debug)
 
-            if score < max_score:
+            if score <= max_score:
                 break
 
         Learning.log('Learning bayes net ended. Score achieved: ' + str(score), debug)
         return bayes_net
 
     @staticmethod
-    def learn(data_set, metric = 'AIC', algorithm = 'HC', debug = False):
-        if algorithm == 'HC':
-            return Learning.hill_climbing(data_set, metric, debug)
+    def hill_climbing_one_loop(data_set, metric = 'AIC', debug = False):
+        bayes_net = BayesNet(data_set)
+        score = bayes_net.score(data_set, metric)
+
+        while True:
+            max_score = score
+            Learning.log('Score: ' + str(score), debug)
+
+            for node_i in bayes_net.nodes():
+                for node_j in bayes_net.nodes():
+                    if node_i != node_j:
+                        if not bayes_net.is_parent(node_j, node_i):
+                            if not bayes_net.check_cycle(node_j, node_i):
+                                bayes_net.add_edge(node_j, node_i)
+                                new_score = bayes_net.score(data_set, metric)
+                                if new_score <= score:
+                                    bayes_net.delete_edge(node_j, node_i)
+                                else:
+                                    score = new_score
+                                    Learning.log(
+                                        'Adding edge ' + str(node_j) + ' -> ' + str(node_i) + '. New score: ' + str(
+                                            score), debug)
+
+                        if bayes_net.is_parent(node_j, node_i):
+                            bayes_net.delete_edge(node_j, node_i)
+                            new_score = bayes_net.score(data_set, metric)
+                            if new_score <= score:
+                                bayes_net.add_edge(node_j, node_i)
+                            else:
+                                score = new_score
+                                Learning.log(
+                                    'Deleting edge ' + str(node_j) + ' -> ' + str(node_i) + '. New score: ' + str(
+                                        score), debug)
+
+                        if bayes_net.is_parent(node_j, node_i):
+                            if not bayes_net.check_cycle(node_i, node_j, True):
+                                bayes_net.reverse_edge(node_j, node_i)
+                                new_score = bayes_net.score(data_set, metric)
+                                if new_score <= score:
+                                    bayes_net.reverse_edge(node_i, node_j)
+                                else:
+                                    score = new_score
+                                    Learning.log(
+                                        'Reversing edge ' + str(node_j) + ' -> ' + str(node_i) + '. New score: ' + str(
+                                            score), debug)
+
+            if score <= max_score:
+                break
+
+        Learning.log('Learning bayes net ended. Score achieved: ' + str(score), debug)
+        return bayes_net
+
+    @staticmethod
+    def learn(data_set, metric = 'AIC', algorithm = 'HC_O', debug = False):
+        if algorithm == 'HC_M':
+            return Learning.hill_climbing_multiple_loops(data_set, metric, debug)
+        if algorithm == 'HC_O':
+            return Learning.hill_climbing_one_loop(data_set, metric, debug)
         elif algorithm == 'TAN':
             return Learning.TAN(data_set, metric, debug)
         else:

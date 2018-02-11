@@ -183,11 +183,10 @@ class BayesNet:
 
             graph[node] = children
 
-        if not reversing:
-            graph[v].append(u)
-        else:
-            graph[u].remove(v)
-            graph[v].append(u)
+        if reversing and v in graph[u]:
+                graph[u].remove(v)
+
+        graph[v].append(u)
 
         cycles = [[node] + path for node in graph for path in self.dfs(graph, node, node)]
 
@@ -305,7 +304,7 @@ class BayesNet:
             return 0
 
     def AIC(self, data_set):
-        metric = self.H(data_set) + self.K()
+        metric = self.H(data_set) - self.K()
         return metric
 
     def draw_graph(self, subplot,
