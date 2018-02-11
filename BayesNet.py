@@ -253,25 +253,37 @@ class BayesNet:
 
     def H(self, data_set):
         vertex_number = self.nodes_number()
-
+        nodes = self.net.keys()
         value = 0
-        for i in range(1, vertex_number):
-            for j in range(self.q(self.net[self.vertexes[i]]['possible_values'])):
-                for k in range(self.r(self.net[self.vertexes[i]]['possible_values'])):
+        for i in range(0, vertex_number):
+            for j in range(0, len(self.net[nodes[i]]['parents'])):
+                for k in range(0, len(self.net[nodes[i]]['parents'])):
                     N = self.get_data_set_rows_number(data_set)
                     Nij = 0
-                    for row in data_set:
-                        if self.pa(self.net[self.vertexes[i]]['possible_values']) == row[j]:
-                            Nij += 1
                     Nijk = 0
                     for row in data_set:
-                        if self.pa(self.net[self.vertexes[i]]['possible_values']) == row[j] and self.r(
-                                self.net[self.vertexes[i]]['possible_values'] ==
-                                row[k]):
-                            Nijk += 1
 
-                    value += Nijk/N*math.log(Nijk/Nij)
+                        parent_values = []
+                        for parent_value in self.net[nodes[i]]['parents'][k]:
+                            parent_values.append(parent_value)
 
+                        for parent_value in parent_values:
+                            if parent_value == row[j]:
+                                Nij += 1
+                                possible_node_values = self.r(self, nodes[i])
+                                for possible_node_value in possible_node_values:
+                                    if possible_node_value == row[k]:
+                                        Nijk += 1
+
+                    if Nij == 0.0:
+                        Nij = pow(10,-20)
+
+                    if Nijk == 0.0:
+                        Nijk = pow(10,-20)
+
+                    value += Nijk/N* log(Nijk/Nij)
+
+            value *= -N
         return value
 
     def MDL(self, data_set):
@@ -287,7 +299,7 @@ class BayesNet:
             return 0
 
     def AIC(self, data_set):
-        metric = self.H(data_set) - self.K()
+        metric = self.H(data_set) + self.K()
         return metric
 
     def draw_graph(self, subplot,

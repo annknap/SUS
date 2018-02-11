@@ -16,7 +16,7 @@ class Learning:
 
         while True:
             max_score = score
-            Learning.log('Score: ' + score, debug)
+            Learning.log('Score: ' + str(score), debug)
 
             for node_i in bayes_net.nodes():
                 for node_j in bayes_net.nodes():
@@ -263,5 +263,7 @@ class Learning:
             print "node: ", node, " parents: ", bayes_net.net[node]['parents'], " children: ", bayes_net.net[node]['children']
 
         Learning.log('TAN: Creating TAN tree done.', debug)
+        score = bayes_net.score(data_set, metric)
+        Learning.log('TAN: Score: ' + str(score), debug)
 
         return bayes_net
