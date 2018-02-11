@@ -255,10 +255,11 @@ class BayesNet:
         vertex_number = self.nodes_number()
         nodes = self.net.keys()
         value = 0
+        N = self.get_data_set_rows_number(data_set)
         for i in range(0, vertex_number):
             for j in range(0, len(self.net[nodes[i]]['parents'])):
                 for k in range(0, len(self.net[nodes[i]]['parents'])):
-                    N = self.get_data_set_rows_number(data_set)
+
                     Nij = 0
                     Nijk = 0
                     for row in data_set:
