@@ -199,17 +199,9 @@ class Learning:
                                 Pz = float(count_z/count_k)
                                 Py = float(count_y/count_k)
 
-                                if Pz == 0.0:
-                                    Pz = float(pow(10, -20))
+                                if Pz != 0.0 and Py != 0 and Px != 0:
 
-                                if Py == 0.0:
-                                    Py = float(pow(10, -20))
-
-                                if Px == 0.0:
-                                    Px = float(pow(10, -20))
-
-                                mutual_information = mutual_information + Pijk*log(float(Px/(Pz*Py)))
-                                # print mutual_information
+                                    mutual_information = mutual_information + Pijk*log(float(Px/(Pz*Py)))
 
                     weights[node_i][node_j] = mutual_information
                     Learning.log('TAN: Mutual information for nodes: ' + str(node_i) + " " + str(node_j) + ' : ' + str(
