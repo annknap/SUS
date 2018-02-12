@@ -257,7 +257,6 @@ class Learning:
 
                                     vertex_1 = node_i
                                     vertex_2 = node_j
-                print "max weight: ", max_weight, " nodes: ", vertex_1, vertex_2
                 causing_cycle = bayes_net.check_cycles_no_directions(edges, vertex_1, vertex_2)
 
                 if causing_cycle:
