@@ -269,7 +269,8 @@ class BayesNet:
                     for row in data_set:
 
                         parent_values = []
-                        for parent_value in self.net[nodes[i]]['parents'][k]:
+
+                        for parent_value in self.net[self.net[nodes[i]]['parents'][k]]['possible_values']:
                             parent_values.append(parent_value)
 
                         for parent_value in parent_values:
@@ -280,6 +281,9 @@ class BayesNet:
                                     if possible_node_value == row[k]:
                                         Nijk += 1
 
+                    Nij = float(Nij)
+                    Nijk = float(Nijk)
+
                     if Nij == 0.0:
                         Nij = pow(10, -20)
 
@@ -289,6 +293,7 @@ class BayesNet:
                     value += (Nijk/N)*log(Nijk/Nij)
 
             value *= -N
+
         return value
 
     def MDL(self, data_set):
