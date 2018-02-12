@@ -290,10 +290,9 @@ class BayesNet:
                     if Nijk == 0.0:
                         Nijk = pow(10, -20)
 
-                    value += (Nijk/N)*log(Nijk/Nij)
+                    value = value + (Nijk/N)*log(Nijk/Nij)
 
-            value *= -N
-
+        value = -N * value
         return value
 
     def MDL(self, data_set):
