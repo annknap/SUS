@@ -262,35 +262,29 @@ class BayesNet:
         N = self.get_data_set_rows_number(data_set)
         for i in range(0, vertex_number):
             for j in range(0, len(self.net[nodes[i]]['parents'])):
-                for k in range(0, len(self.net[nodes[i]]['parents'])):
+                for k in range(0, len(self.net[nodes[i]]['possible_values'])):
 
                     Nij = 0
                     Nijk = 0
                     for row in data_set:
 
                         parent_values = []
-
-                        for parent_value in self.net[self.net[nodes[i]]['parents'][k]]['possible_values']:
+                        for parent_value in self.net[self.net[nodes[i]]['parents'][j]]['possible_values']:
                             parent_values.append(parent_value)
 
+
+
                         for parent_value in parent_values:
-                            if parent_value == row[j]:
+                            if parent_value == row[self.vertexes.index(self.net[nodes[i]]['parents'][j])]:
                                 Nij += 1
-                                possible_node_values = self.net[nodes[i]]['possible_values']
-                                for possible_node_value in possible_node_values:
-                                    if possible_node_value == row[k]:
+                                if list(self.net[nodes[i]]['possible_values'])[k] == row[i]:
                                         Nijk += 1
 
                     Nij = float(Nij)
                     Nijk = float(Nijk)
 
-                    if Nij == 0.0:
-                        Nij = pow(10, -20)
-
-                    if Nijk == 0.0:
-                        Nijk = pow(10, -20)
-
-                    value = value + (Nijk/N)*log(Nijk/Nij)
+                    if Nij != 0.0 and Nijk != 0:
+                        value = value + (Nijk/N)*log(Nijk/Nij)
 
         value = -N * value
         return value

@@ -304,6 +304,9 @@ class Learning:
         for node in bayes_net.nodes():
             bayes_net.net[node]['parents'].append('root')
 
+        bayes_net.vertexes = bayes_net.vertexes[:-1]
+        bayes_net.vertexes.append('root')
+
         root_children = bayes_net.net.keys()
         bayes_net.net['root'] = {}
         bayes_net.net['root']['possible_values'] = possible_class_values
