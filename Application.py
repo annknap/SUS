@@ -117,7 +117,7 @@ class Application(Tk):
             self.bayes_net = Learning.learn(self.data_set, self.metric, self.algorithm, self.debug)
             Learning.log("\tLearning net structure time: %s s" % (time.time() - start_time))
             self.bayes_net.draw_graph(self.sub_chart)
-            self.metric_label.configure(text = str(self.bayes_net.score))
+            self.metric_label.configure(text = str(self.bayes_net.net_score))
             self.canvas.show()
             self.toolbar.update()
             self.canvas.get_tk_widget().pack(side = 'bottom', fill = 'both', expand = True)

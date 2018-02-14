@@ -7,7 +7,7 @@ class BayesNet:
     def __init__(self, data_set, has_column_names = False):
         self.net = {}
         self.has_column_names = has_column_names
-        self.score = 0
+        self.net_score = 0
         self.network_graph = DiGraph()
 
         column_names = data_set[0]
@@ -353,7 +353,7 @@ class BayesNet:
         else:
             result = 0
 
-        self.score = result
+        self.net_score = result
         return result
 
     def AIC(self, data_set):
