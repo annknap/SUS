@@ -7,6 +7,7 @@ class BayesNet:
     def __init__(self, data_set, has_column_names = False):
         self.net = {}
         self.has_column_names = has_column_names
+        self.score = 0
         self.network_graph = DiGraph()
 
         column_names = data_set[0]
@@ -29,8 +30,9 @@ class BayesNet:
             else:
                 start = 0
             self.data[column_names[column]] = []
-            for row in range(start, len(data_set)):
-                self.data[column_names[column]].append(data_set[row][column])
+            for row in range(start, len(data_set) - 1):
+                if len(data_set[row][column]) > 0:
+                    self.data[column_names[column]].append(data_set[row][column])
 
         for vertex in column_names:
             self.net[vertex] = {'possible_values': [],
@@ -184,7 +186,7 @@ class BayesNet:
             graph[node] = children
 
         if reversing and v in graph[u]:
-                graph[u].remove(v)
+            graph[u].remove(v)
 
         graph[v].append(u)
 
@@ -232,6 +234,29 @@ class BayesNet:
 
         return len(possible_values)
 
+    def q_i(self, vertex):
+        possible_parents_values = []
+
+        for parent in self.pa(vertex):
+            for value in self.net[parent]['possible_values']:
+                possible_parents_values.append(value)
+
+        possible_parents_values = list(set(possible_parents_values))
+
+        for possible_parents_value in possible_parents_values:
+            yield possible_parents_value
+
+    def r_i(self, vertex):
+        possible_values = []
+
+        for value in self.net[vertex]['possible_values']:
+            possible_values.append(value)
+
+        possible_values = list(set(possible_values))
+
+        for possible_value in possible_values:
+            yield possible_value
+
     def pa(self, vertex):
         return self.net[vertex]['parents']
 
@@ -250,10 +275,37 @@ class BayesNet:
     def K(self):
         parameters_count = 0
 
-        for vertex in self.net:
-            parameters_count += (self.r(vertex) - 1)*self.q(vertex)
+        for i in self.nodes():
+            parameters_count = parameters_count + (self.r(i) - 1)*self.q(i)
 
         return parameters_count
+
+    def H1(self, data_set):
+        value = 0
+        nodes = self.net.keys()
+        N = self.get_data_set_rows_number(data_set)
+
+        for i in self.nodes():
+            for j in self.q_i(i):
+                for k in self.r_i(i):
+                    Nij = 0
+                    Nijk = 0
+
+                    for row in data_set:
+                        for parent in self.pa(i):
+                            if nodes.index(parent) + 1 <= len(row) and row[nodes.index(parent)] == j:
+                                Nij = Nij + 1
+                                if nodes.index(i) + 1 <= len(row) and row[nodes.index(i)] == k:
+                                    Nijk = Nijk + 1
+
+                    Nij = float(Nij)
+                    Nijk = float(Nijk)
+
+                    if Nij != 0.0 and Nijk != 0.0:
+                        value = value + (Nijk/N)*log(Nijk/Nij)
+
+        value = -1*N*value
+        return value
 
     def H(self, data_set):
         vertex_number = self.nodes_number()
@@ -272,13 +324,11 @@ class BayesNet:
                         for parent_value in self.net[self.net[nodes[i]]['parents'][j]]['possible_values']:
                             parent_values.append(parent_value)
 
-
-
                         for parent_value in parent_values:
                             if parent_value == row[self.vertexes.index(self.net[nodes[i]]['parents'][j])]:
                                 Nij += 1
                                 if list(self.net[nodes[i]]['possible_values'])[k] == row[i]:
-                                        Nijk += 1
+                                    Nijk += 1
 
                     Nij = float(Nij)
                     Nijk = float(Nijk)
@@ -286,25 +336,30 @@ class BayesNet:
                     if Nij != 0.0 and Nijk != 0:
                         value = value + (Nijk/N)*log(Nijk/Nij)
 
-        value = -N * value
+        value = -N*value
         return value
 
     def MDL(self, data_set):
-        metric = self.H(data_set) + self.K()/2*log(self.get_data_set_rows_number(data_set))
+        metric = self.H1(data_set) + self.K()/2*log(self.get_data_set_rows_number(data_set))
         return metric
 
     def score(self, data_set, metric):
+        result = 0
+
         if metric == 'AIC':
-            return self.AIC(data_set)
+            result = self.AIC(data_set)
         elif metric == 'MDL':
-            return self.MDL(data_set)
+            result = self.MDL(data_set)
         else:
-            return 0
+            result = 0
+
+        self.score = result
+        return result
 
     def AIC(self, data_set):
-        metric = self.H(data_set) + self.K()
-        ll=self.H(data_set)
-        penalty=self.K()
+        ll = self.H1(data_set)
+        penalty = self.K()
+        metric = ll + penalty
         return metric
 
     def draw_graph(self, subplot,

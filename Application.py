@@ -1,5 +1,7 @@
 import csv
 from Tkinter import *
+
+import time
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from BayesNet import BayesNet
 from tkFileDialog import askopenfilename, asksaveasfilename
@@ -59,12 +61,12 @@ class Application(Tk):
         MDL_radio_button.pack(side = "top", anchor = W)
 
         self.selected_algorithm = StringVar()
-        HC_O_radio_button = Radiobutton(choose_algorithm_container, text = "Hill Climbing with one loops",
+        HC_O_radio_button = Radiobutton(choose_algorithm_container, text = "Hill Climbing with one loop",
                                         variable = self.selected_algorithm, value = "HC_O",
                                         command = self.change_algorithm)
         HC_O_radio_button.select()
         HC_O_radio_button.pack(side = "top", anchor = W)
-        HC_M_radio_button = Radiobutton(choose_algorithm_container, text = "Hill Climbing with multiple loop",
+        HC_M_radio_button = Radiobutton(choose_algorithm_container, text = "Hill Climbing with multiple loops",
                                         variable = self.selected_algorithm, value = "HC_M",
                                         command = self.change_algorithm)
         HC_M_radio_button.pack(side = "top", anchor = W)
@@ -111,9 +113,11 @@ class Application(Tk):
         if self.data_set is not None:
             self.sub_chart.cla()
             pyplot.axis('off')
+            start_time = time.time()
             self.bayes_net = Learning.learn(self.data_set, self.metric, self.algorithm, self.debug)
+            Learning.log("\tLearning net structure time: %s s" % (time.time() - start_time))
             self.bayes_net.draw_graph(self.sub_chart)
-            self.metric_label.configure(text = str(self.bayes_net.score(self.data_set, self.metric)))
+            self.metric_label.configure(text = str(self.bayes_net.score))
             self.canvas.show()
             self.toolbar.update()
             self.canvas.get_tk_widget().pack(side = 'bottom', fill = 'both', expand = True)
@@ -124,7 +128,7 @@ class Application(Tk):
         data_set = list(rows)
 
         for i in range(len(data_set)):
-            data_set[i] = [float(x) for x in data_set[i]]
+            data_set[i] = [x for x in data_set[i]]
 
         return data_set
 
